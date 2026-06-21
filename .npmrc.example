@@ -1,0 +1,18 @@
+# Copy to ".npmrc" on the build machine (e.g. the ArvanCloud server) so that
+# `npm install` can reach the public npm registry through your proxy.
+# Replace HOST:PORT with your proxy (and user:pass@ if it needs auth).
+#
+#   cp .npmrc.example .npmrc
+#   # then edit the two lines below
+#
+# proxy=http://HOST:PORT
+# https-proxy=http://HOST:PORT
+#
+# Optional: increase tolerance for a slow/unstable proxy link
+# fetch-timeout=120000
+# fetch-retries=5
+# fetch-retry-mintimeout=20000
+# fetch-retry-maxtimeout=120000
+#
+# (Optional) use a mirror reachable from Iran instead of a proxy, e.g.:
+# registry=https://registry.npmmirror.com

@@ -47,12 +47,92 @@ public/
   src/assets|icons|fonts|avatars   Static assets served at /src/...
 ```
 
+## Deployment on ArvanCloud (or any server behind a proxy)
+
+The app is a **static SPA** — `npm run build` produces a fully self‑contained
+`dist/` folder. Font Awesome is bundled locally, so the running site needs **no
+international internet** (see the one caveat under Notes about demo photos).
+
+Only the **build step** needs the npm registry. On an Iranian server that has a
+proxy for international access:
+
+### 1. Configure npm to use the proxy
+
+```bash
+cp .npmrc.example .npmrc
+# edit .npmrc and set your proxy, e.g.:
+#   proxy=http://127.0.0.1:8889
+#   https-proxy=http://127.0.0.1:8889
+```
+
+Or set it directly:
+
+```bash
+npm config set proxy http://HOST:PORT
+npm config set https-proxy http://HOST:PORT
+# (or use an Iran-reachable mirror instead)
+npm config set registry https://registry.npmmirror.com
+```
+
+### 2. Clone, install, build
+
+```bash
+git clone <repo-url> && cd neuravergh
+npm install
+npm run build      # outputs static files to ./dist
+```
+
+> Tip: you can also build on a machine **with** internet and copy only `dist/`
+> to the server — then the server never needs the registry at all.
+
+### 3. Serve the static `dist/` folder
+
+Quickest (Node):
+
+```bash
+npm run preview -- --port 8080 --host
+```
+
+Production with **nginx** (recommended) — SPA fallback so deep links work:
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain;
+    root /var/www/neuravergh/dist;
+    index index.html;
+
+    location / {
+        try_files $uri /index.html;
+    }
+
+    # long cache for hashed assets
+    location /assets/ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+}
+```
+
+Copy the build and reload:
+
+```bash
+rsync -a dist/ /var/www/neuravergh/dist/
+sudo nginx -t && sudo systemctl reload nginx
+```
+
 ## Notes
 
 - Static images and fonts live under `public/src/...` and are referenced by
   runtime URL paths (e.g. `src/icons/png/marketing.png`). Figma `figma:asset/*`
   imports are resolved to those public URLs by a small plugin in
   `vite.config.ts`.
-- Font Awesome glyphs are loaded from CDN in `index.html`.
+- Font Awesome is bundled locally (`@fortawesome/fontawesome-free`, imported in
+  `src/main.tsx`) — no runtime CDN, so icons work behind filters / offline.
+- **One remaining external dependency:** the demo restaurant/market screens
+  (`eu-dine-screen`, `eu-market-screen`) reference product photos from
+  `images.unsplash.com`. They degrade gracefully (a placeholder shows if the
+  image can't load). To make those fully local too, drop images into
+  `public/src/photos/` and replace the `image:` URLs in those two files.
 - The marketing service reads `import.meta.env.VITE_*` (e.g.
   `VITE_MARKETING_MOCK_SCENARIO`) — copy `.env` values as needed.
