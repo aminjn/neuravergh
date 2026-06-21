@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Neura UI — پیش‌نمایش ریسپانسیو</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      background:
+        radial-gradient(900px 500px at 18% -8%, rgba(123,98,252,0.22), transparent 60%),
+        radial-gradient(800px 480px at 88% 108%, rgba(184,61,158,0.18), transparent 60%),
+        #0D0B2E;
+      color: #F0ECF9;
+      font-family: 'Vazirmatn', system-ui, sans-serif;
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ---------- top toolbar ---------- */
+    header {
+      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      gap: 14px; padding: 12px 16px; position: relative; z-index: 5;
+    }
+    .brand {
+      position: absolute; right: 18px; top: 50%; transform: translateY(-50%);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .brand .mark {
+      width: 30px; height: 30px; border-radius: 9px;
+      background: linear-gradient(135deg, #8169ff, #b83d9e);
+      display: flex; align-items: center; justify-content: center; color: #fff; font-size: 14px;
+      box-shadow: 0 4px 14px rgba(123,98,252,0.45);
+    }
+    .brand b { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 15px; letter-spacing: .02em; }
+    .brand span { font-size: 11px; color: #9F8DC6; }
+
+    .switcher {
+      display: flex; align-items: center; gap: 4px; padding: 5px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(159,141,198,0.22);
+      border-radius: 999px;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+    }
+    .seg {
+      display: flex; align-items: center; gap: 8px;
+      border: none; cursor: pointer;
+      padding: 9px 16px; border-radius: 999px;
+      background: transparent; color: #C9BCE4;
+      font-family: 'Vazirmatn', sans-serif; font-size: 13px; font-weight: 600;
+      transition: all .18s ease;
+    }
+    .seg i { font-size: 15px; }
+    .seg:hover { color: #fff; background: rgba(255,255,255,0.07); }
+    .seg.active {
+      color: #fff;
+      background: linear-gradient(135deg, #7b62fc, #9b59b6);
+      box-shadow: inset 1px 1px 1px rgba(255,255,255,0.35), 0 4px 14px rgba(123,98,252,0.5);
+    }
+    .seg .lbl { display: none; }
+    @media (min-width: 720px) { .seg .lbl { display: inline; } }
+
+    .tools { display: flex; align-items: center; gap: 4px; padding-right: 4px; margin-right: 2px; border-right: 1px solid rgba(159,141,198,0.22); }
+    .iconbtn {
+      width: 38px; height: 38px; border-radius: 999px; border: none; cursor: pointer;
+      background: transparent; color: #C9BCE4; font-size: 14px; transition: all .18s ease;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .iconbtn:hover { color: #fff; background: rgba(255,255,255,0.07); }
+    .iconbtn:disabled { opacity: .3; cursor: not-allowed; }
+    .dims {
+      position: absolute; left: 18px; top: 50%; transform: translateY(-50%);
+      font-family: 'Space Grotesk', monospace; font-size: 12px; color: #9F8DC6;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .dims b { color: #F0ECF9; font-weight: 600; }
+    @media (max-width: 860px) { .brand, .dims { display: none; } }
+
+    /* ---------- stage ---------- */
+    #stage { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 8px 8px 26px; position: relative; }
+    #scaler { transition: transform .3s cubic-bezier(.4,0,.2,1); transform-origin: center center; }
+    #frameWrap {
+      background: #0B0A0E; border-radius: 0;
+      transition: border-radius .3s ease;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(159,141,198,0.18);
+      overflow: hidden; position: relative;
+    }
+    #frameWrap.device { border-radius: 30px; box-shadow: 0 30px 90px rgba(0,0,0,0.6), 0 0 0 1px rgba(159,141,198,0.25); padding: 0; }
+    #appframe { display: block; width: 100%; height: 100%; border: none; background: #ededf2; }
+
+    .hint {
+      position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+      font-size: 11px; color: #6B5E8A;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="mark"><i class="fa-solid fa-bolt"></i></div>
+      <div style="display:flex;flex-direction:column;line-height:1.2">
+        <b>Neura</b><span>پیش‌نمایش ریسپانسیو</span>
+      </div>
+    </div>
+
+    <div class="switcher" id="switcher">
+      <button class="seg" data-mode="mobile"><i class="fa-solid fa-mobile-screen-button"></i><span class="lbl">موبایل</span></button>
+      <button class="seg" data-mode="tablet"><i class="fa-solid fa-tablet-screen-button"></i><span class="lbl">تبلت</span></button>
+      <button class="seg" data-mode="desktop"><i class="fa-solid fa-display"></i><span class="lbl">دسکتاپ</span></button>
+      <button class="seg" data-mode="full"><i class="fa-solid fa-up-right-and-down-left-from-center"></i><span class="lbl">تمام‌صفحه</span></button>
+      <div class="tools">
+        <button class="iconbtn" id="rotate" title="چرخش"><i class="fa-solid fa-rotate"></i></button>
+        <button class="iconbtn" id="reload" title="بارگذاری مجدد"><i class="fa-solid fa-arrows-rotate"></i></button>
+      </div>
+    </div>
+
+    <div class="dims"><i class="fa-solid fa-ruler-combined"></i> <span><b id="dimW">—</b> × <b id="dimH">—</b></span></div>
+  </header>
+
+  <div id="stage">
+    <div id="scaler">
+      <div id="frameWrap">
+        <iframe id="appframe" src="app.html" title="Neura App" allow="microphone; camera"></iframe>
+      </div>
+    </div>
+    <div class="hint" id="scaleHint"></div>
+  </div>
+
+  <script>
+    const DEVICES = {
+      mobile:  { w: 390,  h: 844,  device: true,  rotatable: true  },
+      tablet:  { w: 834,  h: 1112, device: true,  rotatable: true  },
+      desktop: { w: 1440, h: 900,  device: false, rotatable: false },
+      full:    { full: true,       device: false, rotatable: false },
+    };
+
+    const wrap   = document.getElementById('frameWrap');
+    const scaler = document.getElementById('scaler');
+    const stage  = document.getElementById('stage');
+    const hint   = document.getElementById('scaleHint');
+    const dimW   = document.getElementById('dimW');
+    const dimH   = document.getElementById('dimH');
+    const rotateBtn = document.getElementById('rotate');
+
+    let mode = localStorage.getItem('neura-preview-device') || 'full';
+    let landscape = localStorage.getItem('neura-preview-landscape') === '1';
+    if (!DEVICES[mode]) mode = 'full';
+
+    function curDims() {
+      const d = DEVICES[mode];
+      if (d.full) return null;
+      return landscape && d.rotatable ? { w: d.h, h: d.w } : { w: d.w, h: d.h };
+    }
+
+    function layout() {
+      const d = DEVICES[mode];
+      // toolbar state
+      document.querySelectorAll('.seg').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+      rotateBtn.disabled = !d.rotatable;
+
+      const avail = { w: stage.clientWidth - 24, h: stage.clientHeight - 36 };
+
+      if (d.full) {
+        wrap.classList.remove('device');
+        wrap.style.width = avail.w + 'px';
+        wrap.style.height = avail.h + 'px';
+        scaler.style.transform = 'scale(1)';
+        dimW.textContent = Math.round(avail.w);
+        dimH.textContent = Math.round(avail.h);
+        hint.textContent = '';
+        return;
+      }
+
+      const dim = curDims();
+      wrap.classList.toggle('device', d.device);
+      wrap.style.width = dim.w + 'px';
+      wrap.style.height = dim.h + 'px';
+      const scale = Math.min(1, avail.w / dim.w, avail.h / dim.h);
+      scaler.style.transform = 'scale(' + scale + ')';
+      dimW.textContent = dim.w;
+      dimH.textContent = dim.h;
+      hint.textContent = scale < 1 ? 'مقیاس ' + Math.round(scale * 100) + '٪' : '';
+    }
+
+    function setMode(m) {
+      mode = m;
+      localStorage.setItem('neura-preview-device', m);
+      layout();
+    }
+
+    document.querySelectorAll('.seg').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+    rotateBtn.addEventListener('click', () => {
+      if (!DEVICES[mode].rotatable) return;
+      landscape = !landscape;
+      localStorage.setItem('neura-preview-landscape', landscape ? '1' : '0');
+      layout();
+    });
+    document.getElementById('reload').addEventListener('click', () => {
+      document.getElementById('appframe').contentWindow.location.reload();
+    });
+
+    window.addEventListener('resize', layout);
+    layout();
+  </script>
+</body>
+</html>
